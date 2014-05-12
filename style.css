@@ -1,0 +1,13 @@
+
+#principal{
+    max-width: 70em;
+    margin-left: auto;
+    margin-right: auto;
+}
+#ptext{
+    padding: 1em;
+    border: 2px solid #dde;
+}
+#bot{
+    font-size: 0.8em;
+}

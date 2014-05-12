@@ -1,18 +1,40 @@
 <html>
 <head>
-  <title>IFT4055</title>>
-  <link rel="stylesheet" type="text/css" href="style.css">
+  <title>IFT4055</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+  <link rel="stylesheet" type="text/css" href="style.css"/>
 </head>
 <body>
-<div id="principal">
-  <h2><center>Développement de modèles autoencodeurs à composantes continues</center></h2>
-  
-  <h3>Résumé du projet</h3>
-  Les modèles autoencodeurs sont des modèles de réseaux de neurones artificiels qui permettent d'appendre des représentations utiles de manière non-supervisée.<br/>
-  <br/>
-  Dans un contexte de manifold learning, on veut chercher à représenter un certain nombre de dimensions du manifold en composantes continues (e.g. dans des images la translation et rotation) de manière automatique. Or, les architectures actuelles d'autoencodeurs vont avoir une forte tendance à représenter ces composantes de manière "binaire", c'est à dire qu'une valeur donnée d'une composante continue (la translation si on reprends l'exemple) va être représentée par les activations d'un ensemble d'unités, et non par une activation (qu'on aimerait continue) d'une seule unité.<br/>
-  <br/>
-  Le travail à réaliser pour ce projet consistera à conceptualiser, implémenter puis entrainer de nouvelles architectures de réseaux de neurones autoencodeurs qui favorisent de par leur structure, leur paramètres et leurs fonctions d'activation, l'utilisation "automatique" de composantes continues par le modèle. On mesurera les performances de ces modèles sur des données jouets puis sur des données réelles, et on évaluera grâce à ces données la validité de notre hypothèse d'apprentissage de composantes continues.<br/>
-</div>
+  <div id="principal">
+    <div id="ptext">
+      <h2>
+	<center>Développement de modèles autoencodeurs à composantes continues</center></h2>
+      
+      <h3>Description du projet</h3>
+      Les modèles autoencodeurs sont des modèles de réseaux de neurones artificiels qui permettent d'appendre des représentations utiles de manière non-supervisée.<br/>
+      <br/>
+      Dans un contexte de manifold learning, on veut chercher à représenter un certain nombre de dimensions du manifold en composantes continues (e.g. dans des images la translation et rotation) de manière automatique. Or, les architectures actuelles d'autoencodeurs vont avoir une forte tendance à représenter ces composantes de manière "binaire", c'est à dire qu'une valeur donnée d'une composante continue (la translation si on reprends l'exemple) va être représentée par les activations d'un ensemble d'unités, et non par une activation (qu'on aimerait continue) d'une seule unité.<br/>
+      <br/>
+      Le travail à réaliser pour ce projet consistera à conceptualiser, implémenter puis entrainer de nouvelles architectures de réseaux de neurones autoencodeurs qui favorisent de par leur structure, leur paramètres et leurs fonctions d'activation, l'utilisation "automatique" de composantes continues par le modèle. On mesurera les performances de ces modèles sur des données jouets puis sur des données réelles, et on évaluera grâce à ces données la validité de notre hypothèse d'apprentissage de composantes continues.<br/>
+      <br/><center><hr width="40%"/></center><br/>
+      <h3>Étapes du projet</h3>
+      Début du projet le 12 Mai.
+      <ul>
+	<li>Recherche de la littérature autour du manifold learning et des autoencodeurs, implémentation de premiers prototypes ainsi que du baseline - 12-19 Mai.</li>
+	<li>Première conception et implémentation de diverses approches propices aux composantes continues (débug logiciel à prévoir!)- 19-26 Mai</li>
+	<li>Entrainement et expérimentation avec les approches ("débug" de réseaux de neurones à prévoir!) - 26 Mai - 2 Juin</li>
+	<li>Seconde conception, raffinement et entrainement sur des jeux de données réels. 2-16 Juin</li>
+	<li>Interprétation et compréhension des résultats. À cette étape il faut essayer de comprendre pourquoi notre solution marche (ou pas), ce qui requiert parfois une analyse assez poussée - 16-30 Juin</li>
+	<li>Dernière conception, exploration plus en profondeur des modèles les plus prometteurs - 30 Juin - 7 Juillet</li>
+	<li>Finalisation, préparation des résultats et présentation - 7-11 Juillet.
+      </ul>
+      Fin du projet et présentation, semaine du 7 juillet.
+      <h3>Détails techniques</h3>
+      On utilisera pour ce projet le langage <a href="http://python.org/">Python</a> ainsi que les libraries <a href="http://www.numpy.org/">numpy</a> et <a href="http://deeplearning.net/software/theano/">Theano</a>. Si besoin est, on pourra coder une solution efficace à la main en C, ou encore étendre la librairie Theano pour permettre le calcul efficace de solutions plus exotiques (ainsi que leur gradient).<br/>
+    </div>
+    <div id="bot">
+      Emmanuel Bengio, étudiant au Baccalauréat en Informatique et Recherche Opérationnelle, projet IFT4055 été 2014. Dernière mise à jour le 13 Mai 2014.
+    </div>
+  </div>
 </body>
 </html>
