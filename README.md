@@ -1,0 +1,4 @@
+ccae
+====
+
+Continuous component autoencoder
