@@ -31,6 +31,7 @@
       <center>
 	<ul>
 	  <li><a href="#semaine1">12-19 mai</a></li>
+	  <li><a href="#semaine2">19-26 mai</a></li>
 	</ul>
       </center>
       <h3>Étapes du projet</h3>
@@ -54,12 +55,20 @@
       Cette semaine j'ai lu <em>Contractive auto-encoders: Explicit invariance during feature extraction </em><a href="http://machinelearning.wustl.edu/mlpapers/paper_files/ICML2011Rifai_455.pdf">(Rifai 2011)</a> et implémenté l'algorithme, dans le but d'utiliser un CAE comme un des baseline.<br/>
       J'ai aussi lu certaines parties de <em>Representation Learning: A Review and New Perspectives</em> <a href="http://arxiv.org/pdf/1206.5538.pdf">(Bengio, Courville, Vincent, 2014)</a> puisque ce projet s'attarde à l'apprentissage automatique de meilleures représentations, et j'ai aussi lu brièvement quelques articles discutant de ce sujet (<a href="http://www.stanford.edu/~acoates/papers/coatesleeng_aistats_2011.pdf">Coates, Lee, Ng, 2011</a>;<a href="http://www.cs.toronto.edu/~fritz/absps/tics.pdf">Hinton 2007</a>).<br/>
       J'ai implémenté une version simple d'un autoencodeur dont la seconde couche cachée \(c\) reconstruit la première couche cachée \(h\) de la manière suivante:
-      $$h_i^{(r)} = \exp\left(-(c-\mu_i)^TD_i(c-\mu_i)\right)$$
+      $$h_i^{(r)} = \exp\left(-(c-\mu_i)^TD_i(c-\mu_i)\right) \qquad\qquad\qquad(1)$$
       où \(\mu\in\mathbb{R}^{d_h\times d_c}\) et \(D\in\mathbb{R}^{d_h\times d_c\times d_c}\).
       On peut voir cela comme le fait qu'une unité s'active seulement autour d'une valeur donnée \(\mu_i\) de \(c\). On espère que ces valeurs soient distribuées de telle sorte que l'activation de \(c\) soit distribuée continuellement de par les valeurs de \(\mu\). <br/>
+
+      <a id="semaine2"><h4>Semaine du 19 au 26 mai</h4></a>
+      Cette semaine j'ai entrainé des réseaux avec une couche de reconstruction \((1)\), ainsi que des DAE/CAE sur un ensemble jouet, ainsi que sur <a href="http://yann.lecun.com/exdb/mnist/">MNIST</a>.<br/>
+      J'obtiens des résultats intéressant; sur MNIST notre réseau (avec une couche feedforward/FF puis une couche FF/\((1)\))  prends beaucoup de temps à apprendre à reconstruire son entrée (en termes de nombre d'exemples vus), en effet on remarque que pour un tel réseau le gradient du \(W'\) de la première couche (servant à reconstruire l'entrée \(x\)) est de plusieurs ordres de grandeur supérieur aux gradients des autres paramètres appris. <br/>
+      Rajouter une seconde couche cachée (donc 3 couches en tout) semble atténuer de beaucoup ce problème, et permet un apprentissage plus rapide. Un autre facteur semble être l'initialisation des poids: avec une initialisation éparse des poids, on apprends aussi beaucoup plus vite (i.e. 10 époques au lieu de 50 pour la même erreur). Au final, après beaucoup d'époques, les résultats semblent être les mêmes (mais je ne l'ai pas mesuré précisément).<br/>
+      Un approche complémentaire à la reconstruction \((1)\) est la "construction" suivante:
+      $$c_i = \exp\left(-\sum_j^{d_h} h_j-\mu_{ij} \right) $$
+      qui favorise l'activation autour des \(\mu\). Cette approche marche aussi bien en termes d'erreur de reconstruction, mais ne semble pas diminuer l'erreur de manière appréciable.<br/>
     </div>
     <div id="bot">
-      Emmanuel Bengio, étudiant au Baccalauréat en Informatique et Recherche Opérationnelle, projet IFT4055 été 2014. Dernière mise à jour le 13 mai 2014.
+      Emmanuel Bengio, étudiant au Baccalauréat en Informatique et Recherche Opérationnelle, projet IFT4055 été 2014. Dernière mise à jour le 22 mai 2014.
     </div>
     <br class="wide"/>
   </div>
