@@ -3,10 +3,17 @@ import theano
 import theano.tensor as T
 from math import*
 import scipy.ndimage as ndimg
+import pygame
+
 
 rng = numpy.random.RandomState(42)
+pygame.init()
+screen = pygame.display.set_mode((1000,800))
 
 #theano.config.compute_test_value = 'warn'
+
+xpower = 3
+stab = 4
 
 class HiddenLayer:
     def __init__(self,x,n_in,n_out,activation = T.tanh):
@@ -14,7 +21,8 @@ class HiddenLayer:
         self.n_in = n_in
         self.n_out = n_out
         k = sqrt(6.0/(n_in+n_out))
-        W_vals = numpy.asarray(rng.uniform(-k,k,size=(n_in,n_out)))
+        W_vals = numpy.asarray(rng.uniform(-k,k,size=(n_in,n_out)))**xpower
+        W_vals /= W_vals.max()
         print (n_in,n_out)
         self.W = theano.shared(value=W_vals,name='W')
         self.b = theano.shared(0.25*numpy.ones((n_out,)),name='b')
@@ -30,7 +38,8 @@ class HiddenLayer:
             self.Wp = self.W.T
         else:
             k = sqrt(6.0/(self.n_in+self.n_out))
-            W_vals = numpy.asarray(rng.uniform(-k,k,size=(self.n_out,self.n_in)))
+            W_vals = numpy.asarray(rng.uniform(-k,k,size=(self.n_out,self.n_in)))**xpower
+            W_vals /= W_vals.max() 
             self.Wp = theano.shared(value=W_vals, name="W'")
             self.params.append(self.Wp)
             self.L2 += T.sum(self.Wp**2)
@@ -39,22 +48,34 @@ class HiddenLayer:
         self.params.append(self.bp)
 
 class CCLayer:
-    def __init__(self, x, n_in, n_out, version=2):
+    def __init__(self, x, n_in, n_out, version=4):
+        self.x = x
         self.n_in = n_in
         self.n_out = n_out
         self.version = version
-        if version == 1 or version == 2:
-            self.x = x
-            self.n_in = n_in
-            self.n_out = n_out
+        if version == 1 or version == 2 or version == 4:
             k = sqrt(6.0/(n_in+n_out))
-            W_vals = numpy.asarray(rng.uniform(-k,k,size=(n_in,n_out)))
+            W_vals = numpy.asarray(rng.uniform(-k,k,size=(n_in,n_out)))**xpower
+            W_vals /= W_vals.max()
             print (n_in,n_out)
             self.W = theano.shared(value=W_vals,name='Wcc')
             self.b = theano.shared(0.25*numpy.ones((n_out,)),name='bcc')
             self.output = T.tanh(T.dot(self.x,self.W)+self.b)
             self.params = [self.W,self.b]
             self.L2 = T.sum(self.W**2)
+        elif version == 3:
+            self.mu = theano.shared(
+                rng.uniform(-1,1,size=(self.n_in,self.n_out)),
+                name = 'mu')
+            self.rho = theano.shared(
+                rng.uniform(0,1,size=(self.n_out,)),
+                name = 'rho')
+            # K \in (bs,nin,nout)
+            K = x.dimshuffle(0,1,'x') - self.mu.dimshuffle('x',0,1)
+            self.output = T.exp(-K.sum(axis=1)*self.rho.dimshuffle('x',0))
+            self.params = [self.mu,self.rho]
+            self.L2 = 0
+            
 
     def recon_from(self, s):
         if self.version == 1:
@@ -74,11 +95,18 @@ class CCLayer:
             V = T.exp(-T.mul(L, K).sum(axis=2))
             R = V.T
             self.recon = R
-        elif self.version == 2:
+        elif self.version in [2,3,4]:
             # s = (bs, n_out)
-            self.mu = theano.shared(
-                rng.uniform(-1,1,size=(self.n_in,self.n_out)),
-                name = 'mu')
+            if self.version == 2 or self.version==4:
+                self.mu = theano.shared(
+                    rng.uniform(-1,1,size=(self.n_in,self.n_out)),
+                    name = 'mu')
+                mu = self.mu
+            else:
+                self.mup = theano.shared(
+                    rng.uniform(-1,1,size=(self.n_in,self.n_out)),
+                    name = 'mu\'')
+                mu = self.mup
             D = numpy.zeros((self.n_in,self.n_out,self.n_out))+0.05
             #D = numpy.zeros((self.n_out,self.n_out))+0.05
             for i in range(self.n_in):
@@ -88,8 +116,8 @@ class CCLayer:
             self.pow = theano.shared(
                 rng.uniform(0,1,size=(self.n_in,)),
                 name = 'pw')
-            self.params += [self.mu, self.D]#, self.pow]
-            K = s.dimshuffle('x',0,1) - self.mu.dimshuffle(0,'x',1)
+            self.params += [self.D, mu]#, self.pow]
+            K = s.dimshuffle('x',0,1) - mu.dimshuffle(0,'x',1)
             #K = theano.printing.Print('K')(K)
             #L,_ = theano.map(lambda x:T.dot(x,self.D), [K])
             L,_ = theano.map(T.dot, [K,self.D])
@@ -98,10 +126,7 @@ class CCLayer:
             V = T.exp(-Z)
             R = V.T
             self.recon = R
-        elif self.version == 3:
-            self.mu = theano.shared(
-                rng.uniform(0,1,size=(self.n_in,self.n_out)),
-                name = 'mu')
+            
             
         """
         r = []
@@ -109,7 +134,7 @@ class CCLayer:
             k = (s-self.mu[i].reshape((1,self.n_out)))
             l = T.dot(k, self.D[i])
             # v = T.exp(-T.dot(l, k.T)).diagonal()
-            # but the dot is expensive for nothing since we're only taking the diagonal
+            # but the dot is expensive for nothing  we're only taking the diagonal
             v = T.exp(-T.mul(l, k).sum(axis=1))
             r.append(v)      
 
@@ -127,18 +152,20 @@ class CCLayer:
 class Model:
     def __init__(self, x, n_in, n_hidden, n_cch, useCC):
         self.layerH = HiddenLayer(x, n_in, n_hidden,T.nnet.sigmoid)
+        self.layerH2 = HiddenLayer(self.layerH.output, n_hidden, n_hidden, T.nnet.sigmoid)
         if useCC:
             print "Using CC"
-            self.layerS = CCLayer(self.layerH.output, n_hidden, n_cch)
+            self.layerS = CCLayer(self.layerH2.output, n_hidden, n_cch)
         else:
-            self.layerS = HiddenLayer(self.layerH.output, n_hidden, n_cch,T.nnet.sigmoid)
+            self.layerS = HiddenLayer(self.layerH2.output, n_hidden, n_cch,T.nnet.sigmoid)
         self.layerS.recon_from(self.layerS.output)
-        self.layerH.recon_from(self.layerS.recon)
+        self.layerH2.recon_from(self.layerS.recon)
+        self.layerH.recon_from(self.layerH2.recon)
         self.recon = self.layerH.recon
         self.output = self.layerS.output
         
         self.L2 = self.layerS.L2 + self.layerH.L2
-        self.params = self.layerH.params + self.layerS.params
+        self.params = self.layerH.params + self.layerH2.params + self.layerS.params
 
 toytoy_set = numpy.asarray([
         [0,0,0,0,
@@ -173,6 +200,9 @@ toytoy_set = numpy.asarray([
          0,1,0,0,
          0,1,0,0,
          0,1,0,0]],dtype='float32')
+
+from geom_dataset import*
+
 
 def displace(n,size,amt):
     n = n.reshape(n.shape[0],size[0],size[1]).copy()
@@ -219,26 +249,34 @@ def load_mnist(path='./mnist.pkl'):
     
 
 
+def np2img(n, size=(28,28), scale =1):
+    n = n.reshape(*size).T.reshape(list(size)+[1])*numpy.ones((1,1,3))*255
+    n = pygame.surfarray.make_surface(n)
+    if scale!=1:
+        n = pygame.transform.scale(n, [i*scale for i in size])
+    return n
+
 def train_model():
     
     data = toytoy_set
     #data = numpy.float32(numpy.random.random((10,28*28)))
-    data,labels = load_mnist()['train']#[:5000]
+    #data,labels = load_mnist()['train']#[:5000]
+    data = create_geom_dataset(16)
     numpy.random.shuffle(data)
     print data.shape
-    batch_size = 50
-    base_lr = .03
-    tau = 5
-    size = 28,28
+    batch_size = 200
+    base_lr = .3
+    tau = 500
+    size = 16,16
 
     lr = T.scalar()
     x = T.matrix()
     x.tag.test_value = numpy.ones((8,28*28),dtype='float32')
-    net = Model(x, data.shape[1], 400, 20, False or True)
+    net = Model(x, data.shape[1], 400, 50, False or True)
     print net.params
                           
-    #cost = T.sum((x-net.recon)**2) / batch_size
-    cost = -T.sum(x*T.log(net.recon)+(1-x)*T.log(1-net.recon)) / batch_size
+    cost = T.sum((x-net.recon)**2) / batch_size
+    #cost = -T.sum(x*T.log(net.recon)+(1-x)*T.log(1-net.recon)) / batch_size
     rcost = cost #+ 0.00001 * net.L2
     gradients = T.grad(rcost, net.params)
     updates = []
@@ -297,19 +335,34 @@ def train_model():
                 t0 = time.time()
                 err = train_model(t,real_lr)
                 err, grads = err[:2], err[2:]
+                tt0 = test_model([t[0]])[2][0]
                 print [((k**2).sum(),p) for k,p in zip(grads,net.params)]
-                print linecat(
-                    linecat(np2txt(test_model([data[0]])[2][0]),
-                            np2txt(data[0])),
-                    linecat(np2txt(test_model([t[0]])[2][0]),
-                            np2txt(t[0])))
+                if 0:
+                    print linecat(
+                        linecat(np2txt(test_model([data[0]])[2][0]),
+                                np2txt(data[0])),
+                        linecat(np2txt(tt0),
+                                np2txt(t[0])))
                 print err,'(',epoch,real_lr,')',time.time()-t0,'s'
                 print net.layerH.bp.get_value().mean()
+
+
+                r = test_model(t)[2]
+                for k in range(10):
+                    img = np2img(r[k],size=size,scale=2)
+                    screen.blit(img, (size[0]*k*2,0))
+                    img = np2img(t[k],size=size,scale=2)
+                    screen.blit(img, (size[0]*k*2,size[1]*2))
+                pygame.display.flip()
+
             else:
                 err = train_model(t,real_lr)
-        print "epoch",epoch,"error:", err, "with lr",real_lr
+        print "epoch",epoch,"error:", err[0],err[1], "with lr",real_lr
     print data
     print numpy.round(test_model(data[:3])[1])
 
 if __name__ == "__main__":
-    train_model()
+    try:
+        train_model()
+    finally:
+        pygame.quit()
