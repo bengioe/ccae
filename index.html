@@ -32,6 +32,9 @@
 	<ul>
 	  <li><a href="#semaine1">12-19 mai</a></li>
 	  <li><a href="#semaine2">19-26 mai</a></li>
+	  <li><a href="#semaine3">26 mai-2 juin</a></li>
+	  <li><a href="#semaine4">2-16 juin</a></li>
+	  <li><a href="#semaine5">16-30 juin</a></li>
 	</ul>
       </center>
       <h3>Étapes du projet</h3>
@@ -66,7 +69,45 @@
       Un approche complémentaire à la reconstruction \((1)\) est la "construction" suivante:
       $$c_i = \exp\left(-\sum_j^{d_h} h_j-\mu_{ij} \right) $$
       qui favorise l'activation autour des \(\mu\). Cette approche marche aussi bien en termes d'erreur de reconstruction, mais ne semble pas diminuer l'erreur de manière appréciable.<br/>
-    </div>
+
+
+    <a id="semaine3"><h4>Semaine du 26 mai au 2 juin</h4></a>
+    Cette semaine j'ai comparé quantitativement notre architecture avec le baseline, en diminuant progressivement le nombre d'unités cachées finales (de la couche supérieure).<br/>
+    On obtient les résultats suivants si on prends deux couches cachées de 400 unités ainsi qu'une dernière couche cachée de \(n\) unités:
+    <center>
+    <table class="results" border="1px gray">
+      <th>\(n\)</th><th>autoencodeur</th> <th>notre méthode</th>
+      <tr><td>10</td><td>14.83</td><td>17.33</td></tr>
+      <tr><td>20</td><td>9.3</td><td>12.4</td></tr>
+      <tr><td>50</td><td>7.11</td><td>8.41</td></tr>
+    </table>
+    </center>
+    L'erreur est la log-vraisemblance de la reconstruction. (On utilise aussi la somme des différences au carré, mais cela ne semble pas avoir tant d'impact sur l'apprentissage, à part de devoir ajuster le taux d'apprentissage).<br/>
+    Voici ce qu'on obtient visuellement avec mnist, la première ligne est la reconstruction de la seconde par notre méthode, et la 3e est la reconstruction de la 4e par un autoencodeur.<br/>
+    <center>
+      <img src="mnist_ccae1.png"></img>
+    </center>
+    <a id="semaine4"><h4>2 au 16 juin</h4></a>
+    Cette semaine j'ai changé quelques composantes de l'implémentation. Notamment, la matrice de covariance \(D\) est forcée diagonale, avec une initialisation soit à 1 partout ou bien à seulement certaines endroits. Cela aide d'un point de vue de performance mais aussi d'apprentissage, car il semble que le gradient soit moins petit sur les autres paramètres après ce changement.<br/>
+    J'ai aussi essayé ces implémentation sur un dataset de visages, avec un certain succès.
+    <center>
+      <img src="faces_ccae1.png"></img>
+    </center>
+    Note à moi même: il serait intéressant de ne pas seulement comparer AE et CCAE sur leur propre tâche de reconstruction mais aussi sur une tâche de "transfer learning" où l'on finetune le réseau vers un classifieur en rajoutant une couche cachée pour la classification. Il serait interessant de voir si l'un apprends mieux ou plus vite que l'autre.
+
+    <a id="semaine5"><h4>16 au 30 juin</h4></a>
+
+    Semaine en cours.<br/>
+    Je veux essayer d'aider à l'apprentissage en forçant de minimiser le critère suivant et ainsi augmenter le gradient (en plus d'obtenir un effet souhaitable):
+    
+    $$ \frac{\partial \sum_i h^{(r)}_i}{\partial s_j} - \sum_i\left(\frac{\partial h^{(r)}_i}{\partial s_j}\right)^2$$
+    L'intuition est que quand un \(s_j\) change un peu, on veut que la somme des \(h_i\) reste la même, mais que les composantes individuelles changent beaucoup. Cela devrait favoriser l'activation binaire d'un bord (\(h\)) et continue de l'autre (\(s\)).
+
+    <br/>
+    </div>      
+	
+    
+    
     <div id="bot">
       Emmanuel Bengio, étudiant au Baccalauréat en Informatique et Recherche Opérationnelle, projet IFT4055 été 2014. Dernière mise à jour le 22 mai 2014.
     </div>

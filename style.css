@@ -14,3 +14,9 @@
 br.wide{
     margin-bottom: 5em;
 }
+
+table td{
+    text-align: center;
+    padding: .25em;
+    margin: 2.5em;
+}
