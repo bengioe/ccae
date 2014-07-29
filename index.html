@@ -12,7 +12,7 @@
     <div id="ptext">
       <h2>
 	<center>Développement de modèles autoencodeurs à composantes continues</center></h2>
-      
+      <center> <a href="https://github.com/bengioe/ccae">Repo github</a></center>
       <h3>Description du projet</h3>
       Les modèles autoencodeurs sont des modèles de réseaux de neurones artificiels qui permettent d'appendre des représentations utiles de manière non-supervisée.<br/>
       <br/>
@@ -36,6 +36,7 @@
 	  <li><a href="#semaine4">2-16 juin</a></li>
 	  <li><a href="#semaine5">16-30 juin</a></li>
 	  <li><a href="#semaine6">30 juin-14 juillet</a></li>
+	  <li><a href="#semaine7">14-28 juillet</a></li>
 	</ul>
       </center>
       <h3>Étapes du projet</h3>
@@ -132,12 +133,22 @@
     Il est intéressant de ne pas seulement comparer AE et CCAE sur leur propre tâche de reconstruction mais aussi sur une tâche de "transfer learning" où l'on <em>finetune</em> le réseau vers un classifieur en rajoutant une couche cachée pour la classification. Les quelques expériences que j'ai roulées semblent suggérer que notre méthode donne de meilleurs résultats par rapport à une initialisation aléatoire, mais je n'ai pas encore comparé avec un autoencodeur plus standard (e.g. un DAE).<br/>
 
     <br/>
+    <a id="semaine7"><h4>14 au 28 juillet</h4></a>
+    Cette semaine j'ai continué à expérimenter avec la dernière technique, et j'ai obtenus de bons résultats, à la fois du côté des filtres (des paramètres) mais aussi de la reconstruction.<br/><br/>
+    Finalement après cette exploration, je constate que notre méthode fait un peu moins bien en termes d'erreur de reconstruction (par quelques pourcents), mais d'un autre côté, rapproche beaucoup l'erreur d'entraînement et de test.<br/><br/>
+    Cette semaine j'ai aussi écrit du code pour finetuner nos modèles et parmis les expériences j'ai eu des résultats intéressant, notamment que notre méthode fait mieux sur l'ensemble de visages en termes d'erreur de classification qu'un autoencodeur conventionnel avec la même capacité (nombre de paramètres).<br/>
+    <center>
+    <table class="results" border="1px gray">
+      <th>\(n\)</th><th>autoencodeur</th> <th>notre méthode</th>
+      <tr><td>mnist</td><td>6.52%</td><td>12.96%</td></tr>
+      <tr><td>faces</td><td>19.50%</td><td>17.60%</td></tr>
+    </table>
+    </center><br/>
+    Finalement, j'ai travaillé sur ma <a href="presentation.pdf">présentation</a> du 28 juillet ainsi que sur mon <a href="rapport.pdf">rapport</a>.
+    
     </div>      
-	
-    
-    
     <div id="bot">
-      Emmanuel Bengio, étudiant au Baccalauréat en Informatique et Recherche Opérationnelle, projet IFT4055 été 2014. Dernière mise à jour le 22 mai 2014.
+      Emmanuel Bengio, étudiant au Baccalauréat en Informatique et Recherche Opérationnelle, projet IFT4055 été 2014. Dernière mise à jour le 29 juillet 2014.
     </div>
     <br class="wide"/>
   </div>
