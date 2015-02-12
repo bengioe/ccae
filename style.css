@@ -1,0 +1,22 @@
+
+#principal{
+    max-width: 70em;
+    margin-left: auto;
+    margin-right: auto;
+}
+#ptext{
+    padding: 1em;
+    border: 2px solid #dde;
+}
+#bot{
+    font-size: 0.8em;
+}
+br.wide{
+    margin-bottom: 5em;
+}
+
+table td{
+    text-align: center;
+    padding: .25em;
+    margin: 2.5em;
+}
